@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ movie["title"] }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-button">←</a>  <!-- Back Button -->
+        <h1>{{ movie["title"] }}</h1>
+        <ul>
+            <li><strong>Overview:</strong> {{ movie["overview"] }}</li>
+            <li><strong>Genres:</strong> {{ movie["genres"] }}</li>
+            <li><strong>Release Date:</strong> {{ movie["release_date"] }}</li>
+            <li><strong>Original Language:</strong> {{ movie["original_language"] }}</li>
+            <li><strong>Runtime:</strong> {{ movie["runtime"] }} minutes</li>
+            <li><strong>Popularity:</strong> {{ movie["popularity"] }}</li>
+        </ul>
+        <a href="{{ url_for('home') }}" class="button">Back to Home</a>
+    </div>
+</body>
+</html>

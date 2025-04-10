@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Existing User</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-button">&larr; Home</a> <!-- Back Button -->
+        <h1>Existing User - Movie Recommendations</h1>
+        <form method="POST">
+            <label for="user_id">Enter Your User ID:</label>
+            <input type="number" id="user_id" name="user_id" required>
+            <button type="submit" class="button">Get Recommendations</button>
+        </form>
+
+        {% if recommendations %}
+            <div class="user-info-box">
+                <h2>User Details</h2>
+                <div class="user-info">
+                    <p><strong>User ID:</strong> {{ user_info.user_id }}</p>
+                    <p><strong>Liked Movies:</strong> {{ user_info.liked_movies }}</p>
+                    <p><strong>Disliked Movies:</strong> {{ user_info.disliked_movies }}</p>
+                    <p><strong>Liked Genres:</strong> {{ user_info.liked_genres }}</p>
+                </div>
+            </div>
+
+            <h2>Top 10 Movie Recommendations</h2>
+            <div class="recommendations">
+                <ul>
+                    {% for movie in recommendations %}
+                        <li>
+                            <a href="{{ url_for('movie_details', movie_id=movie['movie_id']) }}">
+                                <strong>{{ movie['title'] }}</strong> - {{ movie['genres'] }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% elif error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+    </div>
+</body>
+</html>

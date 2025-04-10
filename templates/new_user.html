@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New User</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* Container styling */
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* General styling for form elements */
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        input[type="text"],
+        select,
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box; /* Ensures padding doesn't affect width */
+        }
+
+        /* Specific styling for the movie title input */
+        #movie_title {
+            width: 100%;
+            margin-bottom: 0; /* Remove margin between input and suggestions */
+        }
+
+        #movie_title:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        /* Suggestions box styling */
+        #movie_suggestions {
+            display: none;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            position: absolute;
+            width: 52%;
+            background-color: white;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+            margin-top: 0; /* Remove margin at the top */
+            padding-top: 0; /* Ensure no padding at the top */
+        }
+
+        .suggestion {
+            padding: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .suggestion:hover {
+            background-color: #f0f0f0;
+        }
+
+        .suggestion.selected {
+            background-color: #007BFF;
+            color: white;
+        }
+
+        /* Style the back button */
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            text-decoration: none;
+            color: #333;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Error message styling */
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        /* Adjust for mobile responsiveness */
+        @media screen and (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+
+            input[type="text"],
+            select,
+            button {
+                width: 100%;
+                margin-bottom: 12px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-button">←</a>  <!-- Back Button -->
+        <h1>New User</h1>
+        <form method="POST">
+            <label for="movie_title">Enter a Movie Title:</label>
+            <input type="text" id="movie_title" name="movie_title" required autocomplete="off">
+            <div id="movie_suggestions"></div>  <!-- Movie Suggestions -->
+
+            <label for="language">Select Language:</label>
+            <select name="language" required>
+                <option value="en">English</option>
+                <option value="ca">Catalan</option>
+                <option value="fr">French</option>
+                <option value="es">Spanish</option>
+                <option value="de">German</option>
+                <option value="da">Danish</option>
+                <option value="ko">Korean</option>
+                <option value="kk">Kazakh</option>
+                <option value="it">Italian</option>
+                <option value="uk">Ukrainian</option>
+                <option value="th">Thai</option>
+                <option value="pt">Portuguese</option>
+                <option value="no">Norwegian</option>
+                <option value="ja">Japanese</option>
+                <option value="tr">Turkish</option>
+                <option value="bn">Bengali</option>
+                <option value="hi">Hindi</option>
+                <option value="ru">Russian</option>
+                <option value="sv">Swedish</option>
+                <option value="ta">Tamil</option>
+                <option value="te">Telugu</option>
+                <option value="pa">Punjabi</option>
+                <option value="la">Latin</option>
+                <option value="ml">Malayalam</option>
+                <option value="ur">Urdu</option>
+            </select>
+
+            <button type="submit" class="button">Recommend Movies</button>
+        </form>
+
+        {% if recommendations %}
+            <h2>Recommended Movies:</h2>
+            <ul>
+                {% for movie in recommendations %}
+                    <li>
+                        <a href="{{ url_for('movie_details', movie_id=movie['movie_id']) }}">
+                            {{ movie["title"] }} - {{ movie["genres"] }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% elif error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+    </div>
+
+    <script>
+        // Detect user typing and show movie suggestions
+        $(document).ready(function() {
+            let selectedIndex = -1;
+
+            $('#movie_title').on('input', function() {
+                var query = $(this).val().toLowerCase();
+
+                if (query.length > 2) {  // Only show suggestions if the query is longer than 2 characters
+                    $.ajax({
+                        url: '/get_movie_suggestions',
+                        method: 'GET',
+                        data: { query: query },
+                        success: function(response) {
+                            if (response.suggestions.length > 0) {
+                                var suggestionsHtml = '';
+                                response.suggestions.forEach(function(movie) {
+                                    suggestionsHtml += '<div class="suggestion" data-movie-id="' + movie.movie_id + '">' + movie.title + '</div>';
+                                });
+                                $('#movie_suggestions').html(suggestionsHtml).show();
+                            } else {
+                                $('#movie_suggestions').hide();
+                            }
+                        }
+                    });
+                } else {
+                    $('#movie_suggestions').hide();
+                }
+            });
+
+            // Handle movie selection from suggestions
+            $(document).on('click', '.suggestion', function() {
+                var selectedTitle = $(this).text();
+                $('#movie_title').val(selectedTitle);
+                $('#movie_suggestions').hide();
+            });
+
+            // Keyboard navigation (up and down keys)
+            $('#movie_title').on('keydown', function(e) {
+                const suggestions = $('.suggestion');
+                if (e.key === "ArrowDown") {
+                    if (selectedIndex < suggestions.length - 1) {
+                        selectedIndex++;
+                    }
+                } else if (e.key === "ArrowUp") {
+                    if (selectedIndex > 0) {
+                        selectedIndex--;
+                    }
+                } else if (e.key === "Enter") {
+                    if (selectedIndex !== -1) {
+                        var selectedTitle = $(suggestions[selectedIndex]).text();
+                        $('#movie_title').val(selectedTitle);
+                        $('#movie_suggestions').hide();
+                    }
+                }
+
+                // Update the selected suggestion style
+                suggestions.removeClass('selected');
+                if (selectedIndex >= 0) {
+                    $(suggestions[selectedIndex]).addClass('selected');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
