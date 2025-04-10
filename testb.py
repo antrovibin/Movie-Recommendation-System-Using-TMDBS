@@ -8,8 +8,8 @@ from datetime import datetime
 import re
 
 # Load Data
-movies = pd.read_csv("/Users/antropravin/Desktop/Bezohminds/Task/Testing/processed_movie_data.csv")
-users = pd.read_csv("/Users/antropravin/Desktop/Bezohminds/Task/Updating/data.csv")
+movies = pd.read_csv("/Users/processed_movie_data.csv")
+users = pd.read_csv("/Users/data.csv")
 
 # Process user data
 users["liked_movies"] = users["liked_movies"].apply(lambda x: eval(x) if isinstance(x, str) else x)
